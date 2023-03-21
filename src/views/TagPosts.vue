@@ -1,12 +1,10 @@
 <template>
-  <div class="home">
-    <h1>Home</h1>
+  <div class="tag">
     <div v-if="error">{{ error }}</div>
     <div v-if="posts.length" class="layout">
-      <PostList :posts="posts" />
+      <PostList :posts="filteredPosts" />
       <TagCloud :posts="posts" />
     </div>
-
     <div v-else>
       <SpinnerComponent />
     </div>
@@ -14,33 +12,38 @@
 </template>
 
 <script>
+import { computed } from "vue";
+import { useRoute } from "vue-router";
 import PostList from "../components/PostList.vue";
 import TagCloud from "../components/TagCloud.vue";
 import SpinnerComponent from "../components/SpinnerComponent.vue";
-import getPosts from "../composables/getPosts.js";
+import getPosts from "../composables/getPosts";
 
 export default {
-  name: "Home",
+  name: "Tag",
   components: { PostList, SpinnerComponent, TagCloud },
   setup() {
-    const { posts, error, load } = getPosts();
+    const { error, posts, load } = getPosts();
     load();
-    return {
-      posts,
-      error,
-    };
+
+    const route = useRoute();
+    console.log(route);
+    const filterBy = route.params.tag;
+
+    const filteredPosts = computed(() => {
+      return posts.value.filter((item) => {
+        return item.tags.includes(filterBy);
+      });
+    });
+    console.log(filterBy, filteredPosts);
+    return { error, posts, filteredPosts };
   },
 };
 </script>
 <style>
-.home {
+.tag {
   max-width: 1200px;
   margin: 0 auto;
   padding: 10px;
-}
-.layout {
-  display: grid;
-  grid-template-columns: 3fr 1fr;
-  gap: 20px;
 }
 </style>
